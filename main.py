@@ -403,6 +403,7 @@ class MonteCarloTreeSearchNode():
 
 # game loop
 game_on = True
+just_shot = False
 
 while game_on:
     clock.tick(FPS)
@@ -451,7 +452,12 @@ while game_on:
             taking_shot = False
 
     # draw pool cue
+    if just_shot:
+        pygame.time.wait(1000)
+        just_shot = False
+        
     if taking_shot and game_running:
+        
         if cue_ball_potted:
             # reposition cue ball
             balls[-1].body.position = (888, SCREEN_HEIGHT / 2)
@@ -509,8 +515,8 @@ while game_on:
         if len(valid_pockets) != 0:
             chosen_pocket = valid_pockets[chosen]
             angle = angle_between_points(chosen_pocket, target_pos)
-            x = (BALL_DIAMETER / 2) * math.cos(angle)
-            y = (BALL_DIAMETER / 2) * math.sin(angle)
+            x = BALL_DIAMETER * math.cos(angle)
+            y = BALL_DIAMETER * math.sin(angle)
             
             target_pos = target_pos[0]+x, target_pos[1]+y
             
@@ -520,17 +526,18 @@ while game_on:
         
         print(cue_angle)
         
-        cue.update(cue_angle)
+        cue.update(angle_between_points(balls[-1].body.position, (balls[-1].body.position[0] + -math.cos(cue_angle), balls[-1].body.position[1] + math.sin(cue_angle))))
         cue.draw(screen)
         
-        # Hardcoded to always shoot at 75% of max force
+        # Hardcoded to always shoot at max force
         balls[-1].body.apply_impulse_at_local_point(
             (
-                MAX_FORCE * 0.75 * math.cos(cue_angle),
-                MAX_FORCE * 0.75 * math.sin(cue_angle),
+                MAX_FORCE * math.cos(cue_angle),
+                MAX_FORCE * math.sin(cue_angle),
             ),
             (0, 0),
         )
+        just_shot = True
 
     # power up pool cue
     # if powering_up and game_running:
